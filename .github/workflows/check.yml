@@ -72,7 +72,7 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew ktlint server-opensource:check --scan
         env:
-          TMPDIR: ${{ GITHUB_WORKSPACE }}/build/tmp
+          TMPDIR: ${{ env.GITHUB_WORKSPACE }}/build/tmp
       - uses: actions/upload-artifact@v2
         if: failure()
         with:
