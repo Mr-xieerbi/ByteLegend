@@ -36,6 +36,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-${{ hashFiles('**/*.gradle.kts') }}
             ${{ runner.os }}-
+      - name: Make project tmp dir
+        # Avoid /tmp/junit7926058776963978936/zoo.cfg (Permission denied)
+        run: mkdir -p ${{ env.GITHUB_WORKSPACE }}/build/tmp
       - name: Build with Gradle
         run: ./gradlew check --scan
         env:
