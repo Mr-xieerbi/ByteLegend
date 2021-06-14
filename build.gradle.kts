@@ -1,3 +1,5 @@
+import com.bytelegend.buildsupport.isCI
+
 plugins {
     id("idea")
     kotlin("jvm") apply false
@@ -20,7 +22,9 @@ allprojects {
 
     tasks.withType<Test> {
         useJUnitPlatform()
-        jvmArgs("-Djava.io.tmpdir=${rootProject.buildDir.resolve("tmp").absolutePath}")
+        if (isCI()) {
+            jvmArgs("-Djava.io.tmpdir=${rootProject.buildDir.resolve("tmp").absolutePath}")
+        }
     }
 }
 

@@ -38,9 +38,6 @@ jobs:
             ${{ runner.os }}-
       - name: Build with Gradle
         run: ./gradlew check --scan
-        env:
-          # Avoid /tmp/junit7926058776963978936/zoo.cfg (Permission denied)
-          TMPDIR: ${{ github.workspace }}/build/tmp
       - uses: actions/upload-artifact@v2
         if: failure()
         with:
