@@ -20,6 +20,7 @@ allprojects {
 
     tasks.withType<Test> {
         useJUnitPlatform()
+        jvmArgs("-Djava.io.tmpdir=${rootProject.buildDir.resolve("tmp").absolutePath}")
     }
 }
 
