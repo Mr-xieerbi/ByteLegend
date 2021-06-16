@@ -42,7 +42,7 @@ jobs:
           mkdir -p "$GITHUB_WORKSPACE/build/tmp"
           sudo chmod 777 "$GITHUB_WORKSPACE/build/tmp"
       - name: Build with Gradle
-        run: ./gradlew check --scan
+        run: ./gradlew :server:sync-server:dockerTest --scan
       - uses: actions/upload-artifact@v2
         if: failure()
         with:
