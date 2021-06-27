@@ -79,7 +79,7 @@ class LocaleSelectionDropdown : GameUIComponent<LocaleSelectionDropdownProps, RS
                 }
 
                 img {
-                    attrs.src = game.resolve("/img/attribution/google-translate.png")
+                    attrs.src = game.resolve("img/attribution/google-translate.png")
                     attrs.jsStyle {
                         height = "16px"
                     }

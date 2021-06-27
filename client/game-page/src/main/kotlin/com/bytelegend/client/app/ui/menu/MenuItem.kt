@@ -67,7 +67,7 @@ class MenuItem : GameUIComponent<MenuItemProps, MenuItemState>() {
             }
 
             img {
-                attrs.src = game.resolve("/img/ui/${props.iconImageId}.png")
+                attrs.src = game.resolve("img/ui/${props.iconImageId}.png")
                 attrs.jsStyle {
                     height = "${iconSize}px"
                     width = "${iconSize}px"

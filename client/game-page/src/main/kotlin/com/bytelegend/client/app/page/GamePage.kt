@@ -7,6 +7,9 @@ import com.bytelegend.app.shared.Direction
 import com.bytelegend.app.shared.GameInitData
 import com.bytelegend.app.shared.PixelSize
 import com.bytelegend.app.shared.playerAnimationSetResourceId
+import com.bytelegend.app.shared.protocol.LogStreamEventData
+import com.bytelegend.app.shared.protocol.logStreamEvent
+import com.bytelegend.app.shared.protocol.playerEnterSceneEvent
 import com.bytelegend.client.app.engine.BrowserConsoleLogger
 import com.bytelegend.client.app.engine.GAME_UI_UPDATE_EVENT
 import com.bytelegend.client.app.engine.Game
@@ -17,6 +20,7 @@ import com.bytelegend.client.app.engine.resource.AudioResource
 import com.bytelegend.client.app.engine.resource.I18nTextResource
 import com.bytelegend.client.app.engine.resource.ImageResource
 import com.bytelegend.client.app.obj.HeroCharacter
+import com.bytelegend.client.app.obj.uuid
 import com.bytelegend.client.app.ui.AudioSwitchWidget
 import com.bytelegend.client.app.ui.BannerUIComponent
 import com.bytelegend.client.app.ui.CoinCountWidget
@@ -87,10 +91,23 @@ fun main() {
         BrowserConsoleLogger.error("$a $b $c $d $e")
     }
 
+    println(playerEnterSceneEvent(""))
+//    println(logStreamEvent.asDynamic())
+
     render(document.getElementById("app")) {
         child(GamePage::class) {
         }
     }
+
+    window.setInterval({
+        game.eventBus.emit(
+            logStreamEvent("JavaIsland"),
+            LogStreamEventData(
+                "JavaIsland", "remember-brave-people",
+                listOf(uuid(), uuid(), uuid())
+            )
+        )
+    }, 1000)
 }
 
 interface GamePageState : RState {
@@ -113,13 +130,13 @@ class GamePage : RComponent<GamePageProps, GamePageState>() {
         game.resourceLoader.loadAsync(
             I18nTextResource(
                 "common-${game.locale.lowercase()}",
-                game.resolve("/i18n/common/${game.locale.lowercase()}.json"),
+                game.resolve("i18n/common/${game.locale.lowercase()}.json"),
                 game.i18nTextContainer
             )
         )
-        game.resourceLoader.loadAsync(AudioResource("forest", game.resolve("/audio/forest.ogg")), false)
-        game.resourceLoader.loadAsync(AudioResource("starfly", game.resolve("/audio/starfly.mp3")), false)
-        game.resourceLoader.loadAsync(AudioResource("popup", game.resolve("/audio/popup.mp3")), false)
+        game.resourceLoader.loadAsync(AudioResource("forest", game.resolve("audio/forest.ogg")), false)
+        game.resourceLoader.loadAsync(AudioResource("starfly", game.resolve("audio/starfly.mp3")), false)
+        game.resourceLoader.loadAsync(AudioResource("popup", game.resolve("audio/popup.mp3")), false)
         game.webSocketClient.self = game.resourceLoader.loadAsync(game.webSocketClient)
 
         if (game.heroPlayer.isAnonymous) {
@@ -131,7 +148,7 @@ class GamePage : RComponent<GamePageProps, GamePageState>() {
             val animationSetDeferred = game.resourceLoader.loadAsync(
                 ImageResource(
                     animationSetId,
-                    game.resolve("/img/player/$animationSetId.png")
+                    game.resolve("img/player/$animationSetId.png")
                 )
             )
             game.resourceLoader.loadAsync(

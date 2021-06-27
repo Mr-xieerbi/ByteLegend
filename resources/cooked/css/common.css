@@ -19,6 +19,12 @@ body {
     user-select: none;
 }
 
+.icp-widget {
+    color: white;
+    font-size: 14px;
+    margin: 0 5px 0 5px
+}
+
 #online-counter-offline {
     color: red;
     text-shadow: -2px 0 #000, 0 2px #000, 2px 0 #000, 0 -2px #000, #000 0.1em 0.1em 0.2em;

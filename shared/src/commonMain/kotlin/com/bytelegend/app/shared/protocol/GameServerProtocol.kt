@@ -21,6 +21,8 @@ fun playerEnterSceneEvent(mapId: String) = "protocol.player.enter.${mapId}"
 fun playerLeaveSceneEvent(mapId: String) = "protocol.player.leave.${mapId}"
 fun playerMoveOnSceneEvent(mapId: String) = "protocol.player.move.${mapId}"
 
+fun logStreamEvent(mapId: String): String = "protocol.log.stream.${mapId}"
+
 /**
  * Periodically get online player number
  */
@@ -34,7 +36,6 @@ const val REMOVE_STATE_EVENT = "protocol.remove.state"
 const val PUT_STATE_EVENT = "protocol.put.state"
 const val REMOVE_ITEM_EVENT = "protocol.remove.item"
 const val KICK_OFF_EVENT = "protocol.kick.off"
-const val LOG_STREAM_EVENT = "protocol.log.stream"
 
 
 interface GameServerProtocol {

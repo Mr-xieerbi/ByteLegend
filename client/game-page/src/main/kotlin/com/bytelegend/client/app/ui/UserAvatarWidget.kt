@@ -54,7 +54,7 @@ class UserAvatarWidget : GameUIComponent<GameProps, UserAvatarWidgetState>() {
 
                 img {
                     attrs.classes = jsObjectBackedSetOf("avatar-img")
-                    attrs.src = game.resolve("/img/ui/login.png")
+                    attrs.src = game.resolve("img/ui/login.png")
                 }
 
                 span {

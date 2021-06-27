@@ -161,7 +161,7 @@ class MiniMap : AbstractMapCanvas<MiniMapState>() {
         ) {
             if (!isMinimized()) {
                 attrs.jsStyle {
-                    backgroundImage = """url("${game.resolve("/img/ui/minimap.png")}")"""
+                    backgroundImage = """url("${game.resolve("img/ui/minimap.png")}")"""
                     backgroundSize = "100% 100%"
                     backgroundRepeat = "no-repeat"
                     backgroundPosition = "0 0px"
@@ -183,7 +183,7 @@ class MiniMap : AbstractMapCanvas<MiniMapState>() {
                         if (!isMaximized()) {
                             display = "none"
                         }
-                        backgroundImage = "url('${game.resolve("/map/${activeScene.map.id}/roadmap.svg")}')"
+                        backgroundImage = "url('${game.resolve("map/${activeScene.map.id}/roadmap.svg")}')"
                         backgroundSize = "100% 100%"
                         cursor = state.cursor
                         zIndex = miniMapZIndex

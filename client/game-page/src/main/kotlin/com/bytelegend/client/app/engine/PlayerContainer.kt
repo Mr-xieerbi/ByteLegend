@@ -99,7 +99,7 @@ class PlayerContainer(
                         resourceLoader.loadAsync(
                             ImageResource(
                                 animationSetId,
-                                game.resolve("/img/player/$animationSetId.png")
+                                game.resolve("img/player/$animationSetId.png")
                             ),
                             false
                         )

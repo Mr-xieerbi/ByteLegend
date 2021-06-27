@@ -50,7 +50,6 @@ interface Logger {
 interface GameRuntime {
     val hero: Character?
     val heroPlayer: Player
-    val RRBD: String
     val locale: Locale
     val eventBus: EventBus
     val sceneContainer: GameSceneContainer
@@ -61,6 +60,11 @@ interface GameRuntime {
     val toastController: ToastController
 
     fun i(textId: String, vararg args: String): String
+
+    /**
+     * Resolve a path relative to RRBD
+     */
+    fun resolve(relativePath: String): String
 }
 
 interface GameContainerSizeAware {

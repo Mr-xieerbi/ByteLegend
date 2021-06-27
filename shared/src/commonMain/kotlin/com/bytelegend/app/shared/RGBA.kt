@@ -11,4 +11,6 @@ data class RGBA(
     val g: Int,
     val b: Int,
     val a: Int
-)
+) {
+    fun isTransparent() = a == 0
+}

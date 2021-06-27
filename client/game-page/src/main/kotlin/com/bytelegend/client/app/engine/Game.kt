@@ -72,7 +72,6 @@ class Game(
     override val di: DI,
     gameInitData: GameInitData
 ) : DIAware, GameRuntime, GameContainerSizeAware {
-    override val RRBD: String by di.instance(tag = "RRBD")
     override val locale: Locale by di.instance()
     override val eventBus: EventBus by di.instance()
     override val sceneContainer: GameSceneContainer by di.instance()
@@ -90,6 +89,7 @@ class Game(
     override val hero: Character?
         get() = _hero
     override val heroPlayer: Player by di.instance()
+    private val RRBD: String by di.instance(tag = "RRBD")
 
     val mapHierarchy: List<GameMapDefinition> = gameInitData.maps
     val idToMapDefinition: Map<String, GameMapDefinition> by lazy {
@@ -141,7 +141,7 @@ class Game(
 
     override fun i(textId: String, vararg args: String): String = i18nTextContainer.getValue(textId).render(*args)
 
-    fun resolve(path: String) = "${RRBD}$path"
+    override fun resolve(relativePath: String) = "${RRBD}/$relativePath"
 
     private fun onItemsStatesUpdateEvent(itemsStatesUpdateEvent: ItemsStatesUpdateEventData) {
         if (!itemsStatesUpdateEvent.onFinishSpec.items.isEmpty()) {

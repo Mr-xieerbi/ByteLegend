@@ -40,8 +40,8 @@ data class CompressedGameMapDynamicObject(
     override val id: String,
     val frames: List<List<List<List<Int>>>>
 ) : CompressedGameMapObject {
+    @get:JsonIgnore
     override val layer: Int = PLAYER_LAYER + 1
-        @JsonIgnore get
     override val type: Int = GameMapObjectType.GameMapDynamicSprite.index
 
     override fun decompress() = GameMapDynamicSprite(

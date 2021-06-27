@@ -16,7 +16,7 @@ class RoadmapModal : GameUIComponent<GameProps, RState>() {
             attrs.jsStyle {
                 width = "${divWidth.toInt()}px"
                 height = "${divHeight}px"
-                background = "url('${game.resolve("/img/ui/parchment.svg")}')"
+                background = "url('${game.resolve("img/ui/parchment.svg")}')"
                 backgroundSize = "100% 100%"
             }
         }

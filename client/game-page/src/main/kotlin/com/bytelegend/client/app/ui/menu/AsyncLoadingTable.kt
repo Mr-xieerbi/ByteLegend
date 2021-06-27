@@ -81,7 +81,7 @@ abstract class AsyncLoadingTable<S : AsyncLoadingTableState> : RComponent<GamePr
 
 class OpenSourceSoftwareTable : AsyncLoadingTable<AsyncLoadingTableState>() {
     override val url: String
-        get() = props.game.resolve("/misc/oss.json")
+        get() = props.game.resolve("misc/oss.json")
 
     override fun RBuilder.textBeforeTable() {
         p {
@@ -118,7 +118,7 @@ interface GameMaterialTableState : AsyncLoadingTableState {
 
 class GameMaterialTable : AsyncLoadingTable<GameMaterialTableState>() {
     override val url: String
-        get() = props.game.resolve("/misc/material.json")
+        get() = props.game.resolve("misc/material.json")
 
     override fun GameMaterialTableState.init() {
         showAlert = true

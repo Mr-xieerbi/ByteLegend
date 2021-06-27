@@ -3,6 +3,7 @@
 package com.bytelegend.client.app.engine
 
 import com.bytelegend.app.client.api.EventBus
+import com.bytelegend.app.client.api.GameRuntime
 import com.bytelegend.app.client.api.GameScene
 import com.bytelegend.app.client.api.GameSceneContainer
 import com.bytelegend.app.client.api.ResourceLoader
@@ -37,9 +38,9 @@ class DefaultGameSceneContainer(
     containerSize: PixelSize
 ) : GameSceneContainer, DIAware {
     private val eventBus: EventBus by di.instance()
+    private val gameRuntime: GameRuntime by di.instance()
     private val i18nContainer: MutableMap<String, String> by di.instance(tag = "i18nTextContainer")
     private val scenes: MutableMap<String, GameScene> = JSObjectBackedMap()
-    private val RRBD: String by di.instance(tag = "RRBD")
     private val locale: Locale by di.instance()
     private val resourceLoader: ResourceLoader by instance()
 
@@ -87,14 +88,14 @@ class DefaultGameSceneContainer(
 
     @Suppress("UnsafeCastFromDynamic")
     private suspend fun createThenSwitchScene(oldScene: GameScene?, mapId: String, switchAfterLoading: Boolean, action: suspend (GameScene?, GameScene) -> Unit) {
-        val map = resourceLoader.loadAsync(GameMapResource(mapJsonResourceId(mapId), "$RRBD/map/$mapId/map.json"))
-        val tileset = resourceLoader.loadAsync(ImageResource(mapTilesetResourceId(mapId), "$RRBD/map/$mapId/tileset.png"))
-        val mapScript = resourceLoader.loadAsync(TextAjaxResource(mapScriptResourceId(mapId), "$RRBD/js/game-$mapId.js"))
-        val i18nText = resourceLoader.loadAsync(I18nTextResource(mapTextResourceId(mapId, locale), "$RRBD/i18n/$mapId/${locale.lowercase()}.json", game.i18nTextContainer))
+        val map = resourceLoader.loadAsync(GameMapResource(mapJsonResourceId(mapId), gameRuntime.resolve("map/$mapId/map.json")))
+        val tileset = resourceLoader.loadAsync(ImageResource(mapTilesetResourceId(mapId), gameRuntime.resolve("map/$mapId/tileset.png")))
+        val mapScript = resourceLoader.loadAsync(TextAjaxResource(mapScriptResourceId(mapId), gameRuntime.resolve("js/game-$mapId.js")))
+        val i18nText = resourceLoader.loadAsync(I18nTextResource(mapTextResourceId(mapId, locale), gameRuntime.resolve("i18n/$mapId/${locale.lowercase()}.json"), game.i18nTextContainer))
         val sceneInitData = resourceLoader.loadAsync(GameSceneInitResource(mapId, game.webSocketClient))
 
         if (game.idToMapDefinition.getValue(mapId).roadmap) {
-            resourceLoader.loadAsync(ImageResource(mapRoadmapResourceId(mapId), "$RRBD/map/$mapId/roadmap.svg"))
+            resourceLoader.loadAsync(ImageResource(mapRoadmapResourceId(mapId), gameRuntime.resolve("map/$mapId/roadmap.svg")))
         }
 
         i18nContainer.putAll(i18nText.await())

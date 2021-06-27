@@ -44,5 +44,6 @@ data class KickOffEventData(
 data class LogStreamEventData(
     val mapId: String,
     val missionId: String,
-    val lines: List<String>
+    val lines: List<String>,
+    val last: Boolean = false
 )

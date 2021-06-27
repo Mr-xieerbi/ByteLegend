@@ -4,6 +4,15 @@ interface Animation {
     fun getNextFrameIndex(): Int
 }
 
+class FixedIntervalAnimation(
+    private val frameNumber: Int,
+    private val fps: Int
+) : Animation {
+    private val startTime = Timestamp.now()
+
+    override fun getNextFrameIndex(): Int = ((startTime.elapsedTimeMs() * fps) / 1000).toInt() % frameNumber
+}
+
 object Static : Animation {
     override fun getNextFrameIndex() = 0
 }
@@ -20,7 +29,7 @@ class AnimationFrame(
  */
 class FramePlayingAnimation(
     private val frames: List<AnimationFrame>,
-    private val repeating: Boolean = true
+    private val repetitive: Boolean = true
 ) : Animation {
     private val startTime = Timestamp.now()
 
@@ -28,10 +37,11 @@ class FramePlayingAnimation(
     // `GameMapDynamicSprite.frames=[0,1,2,3]`, frames=[1,2,3]
     // When lastFramePlayingIndex=0, it refers to frames[0], i.e. GameMapDynamicSprite.frames[1]
     private val totalTime = frames.sumOf { it.durationMs }
+
     // Note this is the index of `frames`, not the original `GameMapDynamicSprite.frames`
     override fun getNextFrameIndex(): Int {
         var elapsedTimeMs = startTime.elapsedTimeMs()
-        if (!repeating && elapsedTimeMs >= totalTime) {
+        if (!repetitive && elapsedTimeMs >= totalTime) {
             return frames.last().index
         }
         elapsedTimeMs %= totalTime
@@ -42,7 +52,7 @@ class FramePlayingAnimation(
             }
             elapsedTimeMs -= frames[currentIndex].durationMs
             if (currentIndex == frames.size - 1) {
-                if (repeating) {
+                if (repetitive) {
                     currentIndex = 0
                 } else {
                     return frames[currentIndex].index

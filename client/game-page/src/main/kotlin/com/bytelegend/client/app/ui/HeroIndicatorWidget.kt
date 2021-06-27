@@ -218,7 +218,7 @@ class HeroIndicatorWidget : GameUIComponent<GameProps, HeroIndicatorWidgetState>
             height = HERO_INDICATOR_DIV_HEIGHT,
             zIndex = Layer.HeroIndicator.zIndex() + 1
         ) {
-            img(src = game.resolve("/img/ui/hero.png")) {
+            img(src = game.resolve("img/ui/hero.png")) {
                 attrs.jsStyle {
                     position = "absolute"
                     width = "${HERO_LOGO_WIDTH}px"

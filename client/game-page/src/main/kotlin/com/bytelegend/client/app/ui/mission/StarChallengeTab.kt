@@ -18,7 +18,7 @@ class StarChallengeTab : RComponent<GameProps, RState>() {
             unsafeSpan(game.i("StarByteLegendChallengeText"))
 
             img {
-                attrs.src = game.resolve("/gif/star-bytelegend.gif")
+                attrs.src = game.resolve("gif/star-bytelegend.gif")
             }
         }
     }
