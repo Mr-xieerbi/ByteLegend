@@ -3,6 +3,7 @@ package com.bytelegend.app.shared.entities
 import com.bytelegend.app.shared.annotations.DynamoDbIgnore
 import com.bytelegend.app.shared.annotations.DynamoDbSecondaryPartitionKey
 import com.bytelegend.app.shared.annotations.JsonIgnore
+import com.bytelegend.app.shared.protocol.ServerAware
 import kotlinx.serialization.Serializable
 
 /**
@@ -11,7 +12,7 @@ import kotlinx.serialization.Serializable
  * This should be kept sync with player table "server" index projection.
  */
 @Serializable
-open class BasePlayer {
+open class BasePlayer : ServerAware {
     /**
      * ID for human reading, e.g.
      *
@@ -54,7 +55,7 @@ open class BasePlayer {
      *
      */
     @get: DynamoDbSecondaryPartitionKey(indexNames = ["serverIndex"])
-    var server: Int = 0
+    override var server: Int = 0
 
     /**
      * The character id for display.
