@@ -14,11 +14,12 @@ class GameMapMission(
     val totalStar: Int,
     override val map: String,
     override val sprite: String,
-    override val point: GridCoordinate,
+    override val gridCoordinate: GridCoordinate,
     override val children: List<String>,
     // Next mission id
-    override val next: String?
-) : GameMapObject, MapMissionSpec {
+    override val next: String?,
+    val region: String?,
+) : GameMapObject, MapMissionSpec, GridCoordinateAware {
     override val layer: Int = 0
     override val type: GameMapObjectType = GameMapObjectType.GameMapMission
     override fun compress() = CompressedGameMapMission(
@@ -27,9 +28,10 @@ class GameMapMission(
         totalStar,
         map,
         sprite,
-        point.toCompressedList(),
+        gridCoordinate.toCompressedList(),
         children,
-        next
+        next,
+        region
     )
 
     override val roadmap: Boolean = true
@@ -44,7 +46,8 @@ data class CompressedGameMapMission(
     val sprite: String,
     val point: List<Int>,
     val children: List<String>,
-    val next: String? = null
+    val next: String? = null,
+    val region: String? = null
 ) : CompressedGameMapObject {
     override val layer: Int = 0
     override val type: Int = GameMapObjectType.GameMapMission.index
@@ -57,6 +60,7 @@ data class CompressedGameMapMission(
         sprite,
         GridCoordinate(point),
         children,
-        next
+        next,
+        region,
     )
 }

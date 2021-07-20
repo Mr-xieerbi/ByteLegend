@@ -8,6 +8,8 @@ import com.bytelegend.app.shared.objects.GameMapObject
 import com.bytelegend.app.shared.objects.GameMapRegion
 import com.bytelegend.app.shared.objects.GameMapText
 import com.bytelegend.github.utils.generated.TiledMap
+import java.awt.Point
+import java.awt.Polygon
 import com.bytelegend.github.utils.generated.TiledMap.Layer as TiledMapLayer
 import com.bytelegend.github.utils.generated.TiledMap.Object as TiledMapObject
 
@@ -51,12 +53,18 @@ class TiledObjectReader(
     private val rawLayerIdToIndexMap: Map<Int, Int>
 ) {
     private val tileSize = tiledMap.getTileSize()
+    val regions by lazy {
+        tiledMap.readRegions()
+    }
+    val missions by lazy {
+        tiledMap.readMissions()
+    }
 
     /**
      * Read mission specs from game-data/missions and merge mission information on map (`MapMissionSpec`)
      */
     fun readAndMergeMissionSpecs(): List<MissionSpec> {
-        val idToMapMission = tiledMap.readMissions().associateBy { it.id }
+        val idToMapMission = missions.associateBy { it.id }
         return missionDataReader.getMissionsOnMap(mapId).map {
             require(it.mapMissionSpec == null) {
                 "mapMissionSpec found in ${it.id}!"
@@ -70,14 +78,12 @@ class TiledObjectReader(
         return tiledMap.readRawObjects()
     }
 
-    fun readRegions() = tiledMap.readRegions()
-
     private fun TiledMap.readRawObjects(): List<GameMapObject> {
         return readCurves() +
             readTexts() +
-            readRegions() +
+            regions +
             readPoints() +
-            readMissions()
+            missions
     }
 
     private fun TiledMap.verify(): TiledMap {
@@ -130,10 +136,21 @@ class TiledObjectReader(
         }.toMap()
 
         val idToMissionSpecs = missionDataReader.getMissionsOnMap(mapId).associateBy { it.id }
+        val idToPolygons = regions.associate { it.id to it.toPolygon() }
+
         return rawMissionObjects.map {
+            val gridCoordinate = it.toPoint()
             // If this object is a tile, `gid` points to a tile id
-            // If this object has "next", it has a property named "next"
+            // Optionally, this object may have "next" property, which points to the next object
+            // Optionally, this object may have child1/child2/.../childN as children, which point to the children objects
             val next: Long? = it.properties.findPropertyOrNull("next")?.toLong()
+            val childrenIds: List<String> = it.properties.filter { it.name.startsWith("child") }
+                .sortedBy { it.name.substringAfter("child").toInt() }
+                .map { it.value }
+            val regionId: String? = idToPolygons.entries.firstOrNull {
+                it.value.contains(Point(gridCoordinate.x * tileSize.width, gridCoordinate.y * tileSize.height))
+            }?.key
+
             GameMapMission(
                 it.name,
                 idToMissionSpecs.getValue(it.name).title,
@@ -141,8 +158,9 @@ class TiledObjectReader(
                 mapId,
                 tileIdToSpriteIdMap.getValue(it.gid),
                 it.toPoint(),
-                emptyList(),
-                tiledNumberIdToRawMissionObjects[next]?.name
+                childrenIds.map { childId -> tiledNumberIdToRawMissionObjects.getValue(childId.toLong()).name },
+                tiledNumberIdToRawMissionObjects[next]?.name,
+                regionId
             )
         }
     }
@@ -193,4 +211,13 @@ class TiledObjectReader(
     private fun List<TiledMap.Property>.findPropertyOrNull(name: String): String? {
         return firstOrNull { it.name == name }?.value
     }
+
+    private fun GameMapRegion.toPolygon(): Polygon {
+        return Polygon(
+            vertices.map { it.x }.toIntArray(),
+            vertices.map { it.y }.toIntArray(),
+            vertices.size
+        )
+    }
+
 }

@@ -129,7 +129,7 @@ class DefaultPlayerMissionContainer(
                 // See MenuItem, from the GitHub menu icon
                     canvasState.determineMenuCoordinateInGameContainer()
                 else
-                    canvasState.calculateCoordinateInGameContainer(mission.point)
+                    canvasState.calculateCoordinateInGameContainer(mission.gridCoordinate)
 
             if (isCanvasInvisible()) {
                 gameScene?.scripts(ASYNC_ANIMATION_CHANNEL, false) {
@@ -188,7 +188,7 @@ class DefaultPlayerMissionContainer(
         itemPopupEffect(
             item,
             canvasState.gameContainerSize,
-            canvasState.calculateCoordinateInGameContainer(mission.point),
+            canvasState.calculateCoordinateInGameContainer(mission.gridCoordinate),
             canvasState.determineRightSideBarTopLeftCornerCoordinateInGameContainer() + PixelCoordinate(
                 0,
                 200

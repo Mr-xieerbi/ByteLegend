@@ -110,7 +110,7 @@ class DefaultGameScene(
             }
         }
         missions.forEach { mission ->
-            val sprite = createMissionSprite(this, mission.point, mission.sprite)
+            val sprite = createMissionSprite(this, mission.gridCoordinate, mission.sprite)
             GameMission(
                 this,
                 mission,

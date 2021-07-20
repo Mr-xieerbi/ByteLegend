@@ -24,8 +24,8 @@ class GameMission(
     private val sprite: DynamicSprite
 ) : CoordinateAware, Sprite by sprite {
     override val id: String = gameMapMission.id
-    override val gridCoordinate: GridCoordinate = gameMapMission.point
-    override val pixelCoordinate: PixelCoordinate = gameMapMission.point * gameScene.map.tileSize
+    override val gridCoordinate: GridCoordinate = gameMapMission.gridCoordinate
+    override val pixelCoordinate: PixelCoordinate = gameMapMission.gridCoordinate * gameScene.map.tileSize
     override val layer: Int = 0
     override val roles: Set<String> =
         jsObjectBackedSetOf(

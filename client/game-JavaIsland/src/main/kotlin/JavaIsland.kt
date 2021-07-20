@@ -50,6 +50,7 @@ fun GameScene.pubGuard() = objects {
                 !gameRuntime.heroPlayer.isAnonymous && !gameRuntime.heroPlayer.states.containsKey(BEGINNER_GUIDE_FINISHED_STATE) -> {
                     helpers.getCharacter(guardId).gridCoordinate = guardStartPoint
                     scripts {
+                        speech(HERO_ID, "HelloWorld")
                         speech(guardId, "DoYouPreferToBeMediocre")
                     }
                 }

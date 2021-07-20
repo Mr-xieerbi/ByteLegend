@@ -93,9 +93,9 @@ class DefaultGameSceneContainer(
         val i18nText = resourceLoader.loadAsync(I18nTextResource(mapTextResourceId(mapId, locale), "$RRBD/i18n/$mapId/${locale.lowercase()}.json", game.i18nTextContainer))
         val sceneInitData = resourceLoader.loadAsync(GameSceneInitResource(mapId, game.webSocketClient))
 
-        if (game.idToMapDefinition.getValue(mapId).roadmap) {
-            resourceLoader.loadAsync(ImageResource(mapRoadmapResourceId(mapId), "$RRBD/map/$mapId/roadmap.svg"))
-        }
+//        if (game.idToMapDefinition.getValue(mapId).roadmap) {
+//            resourceLoader.loadAsync(ImageResource(mapRoadmapResourceId(mapId), "$RRBD/map/$mapId/roadmap.svg"))
+//        }
 
         i18nContainer.putAll(i18nText.await())
 

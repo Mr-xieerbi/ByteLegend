@@ -74,7 +74,7 @@ class MissionTitles : GameUIComponent<GameProps, MissionTitlesState>() {
     }
 
     private fun insideCanvas(mission: GameMapMission): Boolean {
-        return !calculateCoordinateInCanvas(mission.point).outOfCanvas(activeScene.canvasState.getCanvasPixelSize())
+        return !calculateCoordinateInCanvas(mission.gridCoordinate).outOfCanvas(activeScene.canvasState.getCanvasPixelSize())
     }
 
     private fun calculateCoordinateInCanvas(point: GridCoordinate): PixelBlock {

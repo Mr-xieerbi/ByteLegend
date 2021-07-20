@@ -21,6 +21,7 @@ import com.bytelegend.client.app.ui.AudioSwitchWidget
 import com.bytelegend.client.app.ui.BannerUIComponent
 import com.bytelegend.client.app.ui.CoinCountWidget
 import com.bytelegend.client.app.ui.CoinCountWidgetProps
+import com.bytelegend.client.app.ui.EChartsRoadmap
 import com.bytelegend.client.app.ui.FpsCounter
 import com.bytelegend.client.app.ui.GameContainer
 import com.bytelegend.client.app.ui.GameContainerProps
@@ -99,6 +100,16 @@ fun main() {
         child(GamePage::class) {
         }
     }
+
+//    window.setTimeout({
+//        game.modalController.show {
+//            child(EChartsRoadmap::class) {
+//                attrs.theme = "light"
+//                attrs.renderer = "svg"
+//                attrs.gameScene = game.activeScene
+//            }
+//        }
+//    }, 5000)
 }
 
 interface GamePageState : RState {
