@@ -68,7 +68,7 @@ class MissionTitles : GameUIComponent<GameProps, MissionTitlesState>() {
             attrs.title = i(mission.gameMapMission.title)
             attrs.tileCoordinate = mission.gridCoordinate
             attrs.totalStar = mission.gameMapMission.totalStar
-            attrs.currentStar = activeScene.playerMissions.missionStar(mission.id)
+            attrs.currentStar = activeScene.playerChallenges.missionStar(mission.id)
             attrs.mission = mission
         }
     }

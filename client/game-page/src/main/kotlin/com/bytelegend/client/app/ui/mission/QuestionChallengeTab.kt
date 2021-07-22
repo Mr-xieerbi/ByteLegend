@@ -15,7 +15,7 @@ import com.bytelegend.app.client.ui.bootstrap.BootstrapCard
 import com.bytelegend.app.client.ui.bootstrap.BootstrapCardHeader
 import com.bytelegend.app.client.ui.bootstrap.BootstrapCol
 import com.bytelegend.app.client.ui.bootstrap.BootstrapRow
-import com.bytelegend.app.shared.entities.PlayerMissionAnswer
+import com.bytelegend.app.shared.entities.PlayerChallengeAnswer
 import com.bytelegend.app.shared.entities.mission.ChallengeSpec
 import com.bytelegend.app.shared.protocol.missionUpdateEvent
 import com.bytelegend.client.app.engine.GAME_UI_UPDATE_EVENT
@@ -126,7 +126,7 @@ class QuestionChallengeTab : GameUIComponent<QuestionChallengeTabProps, Question
         }
         br { }
 
-        val answers = game.activeScene.playerMissions.getPlayerMissionById(props.missionId)?.answers ?: emptyList()
+        val answers = game.activeScene.playerChallenges.getPlayerChallengesByMissionId(props.missionId).flatMap { it.answers }
 
         renderPlayerAnswers(answers)
 
@@ -165,7 +165,7 @@ class QuestionChallengeTab : GameUIComponent<QuestionChallengeTabProps, Question
         }
     }
 
-    private fun RBuilder.renderPlayerAnswers(answers: List<PlayerMissionAnswer>) {
+    private fun RBuilder.renderPlayerAnswers(answers: List<PlayerChallengeAnswer>) {
         if (answers.isEmpty()) {
             return
         }

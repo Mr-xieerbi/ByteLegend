@@ -4,7 +4,7 @@ import com.bytelegend.app.shared.entities.MissionModalData
 import com.bytelegend.app.shared.entities.mission.Pagination
 import com.bytelegend.app.shared.entities.mission.Tutorial
 import com.bytelegend.app.shared.i18n.Locale
-import com.bytelegend.app.shared.protocol.MissionUpdateEventData
+import com.bytelegend.app.shared.protocol.ChallengeUpdateEventData
 import com.bytelegend.client.utils.JSObjectBackedMap
 import com.bytelegend.client.utils.toMissionModalData
 import com.bytelegend.client.utils.toMissionUpdateEventData
@@ -53,7 +53,7 @@ fun Map<String, String>.toDynamic(): dynamic {
 suspend fun submitMissionAnswer(
     missionId: String,
     answer: String
-): MissionUpdateEventData {
+): ChallengeUpdateEventData {
     val json = JSON.stringify(
         jsObject<dynamic> {
             this.answer = answer

@@ -6,9 +6,9 @@ import com.bytelegend.app.shared.i18n.Locale
 /**
  * Represent the data to display at tutorial tab
  */
-data class TutorialsSpec(
-    val data: List<Tutorial>
-)
+//data class TutorialsSpec(
+//    val data: List<Tutorial>
+//)
 
 data class Tutorial constructor(
     val id: String,

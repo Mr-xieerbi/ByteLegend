@@ -26,7 +26,6 @@ class GameMission(
     override val id: String = gameMapMission.id
     override val gridCoordinate: GridCoordinate = gameMapMission.gridCoordinate
     override val pixelCoordinate: PixelCoordinate = gameMapMission.gridCoordinate * gameScene.map.tileSize
-    override val layer: Int = 0
     override val roles: Set<String> =
         jsObjectBackedSetOf(
             GameObjectRole.Mission.toString(),

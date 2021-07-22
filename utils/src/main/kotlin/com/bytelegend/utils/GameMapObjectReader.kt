@@ -5,6 +5,7 @@ import com.bytelegend.app.shared.entities.mission.MissionSpec
 import com.bytelegend.app.shared.objects.GameMapCurve
 import com.bytelegend.app.shared.objects.GameMapMission
 import com.bytelegend.app.shared.objects.GameMapObject
+import com.bytelegend.app.shared.objects.GameMapPoint
 import com.bytelegend.app.shared.objects.GameMapRegion
 import com.bytelegend.app.shared.objects.GameMapText
 import com.bytelegend.github.utils.generated.TiledMap
@@ -53,11 +54,14 @@ class TiledObjectReader(
     private val rawLayerIdToIndexMap: Map<Int, Int>
 ) {
     private val tileSize = tiledMap.getTileSize()
-    val regions by lazy {
+    val regions: List<GameMapRegion> by lazy {
         tiledMap.readRegions()
     }
-    val missions by lazy {
+    val missions: List<GameMapMission> by lazy {
         tiledMap.readMissions()
+    }
+    val points: List<GameMapPoint> by lazy {
+        tiledMap.readPoints()
     }
 
     /**
@@ -82,7 +86,7 @@ class TiledObjectReader(
         return readCurves() +
             readTexts() +
             regions +
-            readPoints() +
+            points +
             missions
     }
 
@@ -104,14 +108,39 @@ class TiledObjectReader(
 
     /**
      * Convention: if a region name is "XRegion",
-     * then "XRegionName" is its name
+     * then "XRegionName" is its name,
+     * "XRegionCenterPoint" is its center point
      */
-    private fun TiledMap.readRegions(): List<GameMapRegion> = readObjects(TiledObjectType.GameMapRegion) { layer, obj ->
-        GameMapRegion(
-            obj.name,
-            rawLayerIdToIndexMap.getValue(layer.id.toInt()),
-            obj.getPolygonCoordinates()
-        )
+    private fun TiledMap.readRegions(): List<GameMapRegion> {
+        // Two passes,
+        // 1st, generate all instances
+        val tiledIdToRegionId = mutableMapOf<String, String>()
+        readObjects(TiledObjectType.GameMapRegion) { _, obj ->
+            tiledIdToRegionId[obj.id.toString()] = obj.name
+        }
+        // 2nd, populate the "next"
+        return readObjects(TiledObjectType.GameMapRegion) { _, obj ->
+            val vertices = obj.getPolygonCoordinates()
+            val nextId = obj.properties.findPropertyOrNull("next")
+            GameMapRegion(
+                obj.name,
+                vertices.getOrCalculateCenterPoint(obj.name),
+                vertices,
+                tiledIdToRegionId[nextId]
+            )
+        }
+    }
+
+    private fun List<PixelCoordinate>.getOrCalculateCenterPoint(regionId: String): PixelCoordinate {
+        val existingCenterPoint = points.firstOrNull { it.id == "${regionId}CenterPoint" }
+        if (existingCenterPoint != null) {
+            return existingCenterPoint.gridCoordinate * tileSize
+        } else {
+            return PixelCoordinate(
+                sumOf { it.x } / size,
+                sumOf { it.y } / size
+            )
+        }
     }
 
     private fun TiledMapObject.toPoint() = PixelCoordinate(x.toInt(), y.toInt()) / tileSize
@@ -141,11 +170,9 @@ class TiledObjectReader(
         return rawMissionObjects.map {
             val gridCoordinate = it.toPoint()
             // If this object is a tile, `gid` points to a tile id
-            // Optionally, this object may have "next" property, which points to the next object
-            // Optionally, this object may have child1/child2/.../childN as children, which point to the children objects
-            val next: Long? = it.properties.findPropertyOrNull("next")?.toLong()
-            val childrenIds: List<String> = it.properties.filter { it.name.startsWith("child") }
-                .sortedBy { it.name.substringAfter("child").toInt() }
+            // Optionally, this object may have next1/next2/.../nextN, which point to the next objects
+            val nextIds: List<String> = it.properties.filter { it.name.startsWith("next") }
+                .sortedBy { it.name.substringAfter("next").toInt() }
                 .map { it.value }
             val regionId: String? = idToPolygons.entries.firstOrNull {
                 it.value.contains(Point(gridCoordinate.x * tileSize.width, gridCoordinate.y * tileSize.height))
@@ -154,19 +181,19 @@ class TiledObjectReader(
             GameMapMission(
                 it.name,
                 idToMissionSpecs.getValue(it.name).title,
-                idToMissionSpecs.getValue(it.name).challenge?.star ?: 0,
+                idToMissionSpecs.getValue(it.name).challenges.sumOf { it.star },
+                idToMissionSpecs.getValue(it.name).challenges.map { it.id },
                 mapId,
                 tileIdToSpriteIdMap.getValue(it.gid),
                 it.toPoint(),
-                childrenIds.map { childId -> tiledNumberIdToRawMissionObjects.getValue(childId.toLong()).name },
-                tiledNumberIdToRawMissionObjects[next]?.name,
+                nextIds.map { nextId -> tiledNumberIdToRawMissionObjects.getValue(nextId.toLong()).name },
                 regionId
             )
         }
     }
 
-    private fun TiledMap.readPoints(): List<GameMapObject> = readObjects(TiledObjectType.GameMapPoint) { layer, obj ->
-        com.bytelegend.app.shared.objects.GameMapPoint(
+    private fun TiledMap.readPoints(): List<GameMapPoint> = readObjects(TiledObjectType.GameMapPoint) { layer, obj ->
+        GameMapPoint(
             obj.name,
             rawLayerIdToIndexMap.getValue(layer.id.toInt()),
             obj.toPoint()
@@ -219,5 +246,4 @@ class TiledObjectReader(
             vertices.size
         )
     }
-
 }

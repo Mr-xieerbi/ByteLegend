@@ -4,7 +4,10 @@ import com.bytelegend.app.shared.annotations.DynamoDbIgnore
 import com.bytelegend.app.shared.annotations.JsonIgnore
 import com.bytelegend.app.shared.util.currentTimeMillis
 
-open class PlayerMission(
+/**
+ * A PlayerChallenge instance includes all answers a player makes to a challenge.
+ */
+open class PlayerChallenge(
     @get: DynamoDbIgnore
     val playerId: String,
 
@@ -15,7 +18,10 @@ open class PlayerMission(
     val missionId: String,
 
     @get: DynamoDbIgnore
-    open val answers: MutableList<PlayerMissionAnswer>
+    val challengeId: String,
+
+    @get: DynamoDbIgnore
+    open val answers: MutableList<PlayerChallengeAnswer>
 ) {
 
     @get: DynamoDbIgnore
@@ -30,13 +36,13 @@ open class PlayerMission(
 }
 
 /**
- * Represents an abstract answer to a mission.
+ * Represents an abstract answer to a challenge.
  * It can be an answer from frontend,
  * or answer from GitHub webhook event.
  *
  * An answer is immutable after created.
  */
-open class PlayerMissionAnswer(
+open class PlayerChallengeAnswer(
     /**
      * How many stars the player can get from this answer?
      */
@@ -51,7 +57,7 @@ open class PlayerMissionAnswer(
         if (this === other) return true
         if (other == null || this::class != other::class) return false
 
-        other as PlayerMissionAnswer
+        other as PlayerChallengeAnswer
 
         if (star != other.star) return false
         if (accomplished != other.accomplished) return false
@@ -75,5 +81,5 @@ open class PlayerMissionAnswer(
 class SceneInitData(
     val online: Int,
     val players: List<BasePlayer>,
-    val missions: Map<String, PlayerMission>
+    val playerChallenges: Map<String, PlayerChallenge>
 )

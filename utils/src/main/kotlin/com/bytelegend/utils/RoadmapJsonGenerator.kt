@@ -1,10 +1,5 @@
 package com.bytelegend.utils
 
-import com.bytelegend.app.shared.objects.GameMapMission
-import com.bytelegend.app.shared.objects.GameMapRegion
-import com.bytelegend.github.utils.generated.TiledMap
-import java.io.File
-
 data class RoadmapJsonData(
     val nodes: List<RoadmapMissionNode>,
     val links: List<RoadmapMissionLink>,
@@ -32,39 +27,37 @@ data class RoadmapMissionRegion(
     val name: String
 )
 
-class RoadmapJsonGenerator(
-    val tiledMap: TiledMap,
-    val regions: List<GameMapRegion>,
-    val missions: List<GameMapMission>,
-    private val outputJson: File
-) {
-    fun generate() {
-        val categories = regions.map {
-            RoadmapMissionRegion(it.id)
-        }
-
-        val nodes = missions.map {
-            RoadmapMissionNode(
-                it.id,
-                it.title,
-                20,
-                it.gridCoordinate.x * 32,
-                it.gridCoordinate.y * 32,
-                123,
-                0
-            )
-        }
-
-        val links = mutableListOf<RoadmapMissionLink>()
-
-        missions.forEach {
-            if (it.next != null) {
-                links.add(RoadmapMissionLink(it.id, it.next!!))
-            }
-        }
-
-        prettyObjectMapper.writeValue(outputJson, RoadmapJsonData(nodes, links, categories))
-    }
-
-
-}
+//class RoadmapJsonGenerator(
+//    val tiledMap: TiledMap,
+//    val regions: List<GameMapRegion>,
+//    val missions: List<GameMapMission>,
+//    private val outputJson: File
+//) {
+//    fun generate() {
+//        val categories = regions.map {
+//            RoadmapMissionRegion(it.id)
+//        }
+//
+//        val nodes = missions.map {
+//            RoadmapMissionNode(
+//                it.id,
+//                it.title,
+//                20,
+//                it.gridCoordinate.x * 32,
+//                it.gridCoordinate.y * 32,
+//                123,
+//                0
+//            )
+//        }
+//
+//        val links = mutableListOf<RoadmapMissionLink>()
+//
+//        missions.forEach {
+//            if (it.next != null) {
+//                links.add(RoadmapMissionLink(it.id, it.next!!))
+//            }
+//        }
+//
+//        prettyObjectMapper.writeValue(outputJson, RoadmapJsonData(nodes, links, categories))
+//    }
+//}

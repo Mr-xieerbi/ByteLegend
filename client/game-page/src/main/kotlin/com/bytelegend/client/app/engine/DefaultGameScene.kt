@@ -73,7 +73,7 @@ class DefaultGameScene(
 
     lateinit var players: PlayerContainer
 
-    override lateinit var playerMissions: DefaultPlayerMissionContainer
+    override lateinit var playerChallenges: DefaultPlayerChallengeContainer
 
     override fun objects(block: ObjectsBuilder.() -> Unit) {
         block()

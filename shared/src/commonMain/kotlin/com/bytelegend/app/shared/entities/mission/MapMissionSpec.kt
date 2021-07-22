@@ -15,6 +15,5 @@ interface MapMissionSpec {
      * If true, this mission is displayed on roadmap.
      */
     val roadmap: Boolean
-    val children: List<String>
-    val next: String?
+    val next: List<String>
 }

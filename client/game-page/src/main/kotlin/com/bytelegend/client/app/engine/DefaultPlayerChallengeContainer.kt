@@ -8,17 +8,18 @@ import com.bytelegend.app.client.api.EventListener
 import com.bytelegend.app.client.api.GameCanvasState
 import com.bytelegend.app.client.api.GameRuntime
 import com.bytelegend.app.client.api.GameScene
-import com.bytelegend.app.client.api.PlayerMissionContainer
+import com.bytelegend.app.client.api.PlayerChallengeContainer
 import com.bytelegend.app.client.misc.playAudio
 import com.bytelegend.app.shared.GridCoordinate
 import com.bytelegend.app.shared.PixelCoordinate
 import com.bytelegend.app.shared.PixelSize
-import com.bytelegend.app.shared.entities.PlayerMission
+import com.bytelegend.app.shared.entities.PlayerChallenge
 import com.bytelegend.app.shared.entities.PullRequestAnswer
 import com.bytelegend.app.shared.entities.toPullRequestAnswers
 import com.bytelegend.app.shared.objects.GameMapMission
+import com.bytelegend.app.shared.objects.GameObjectRole
+import com.bytelegend.app.shared.protocol.ChallengeUpdateEventData
 import com.bytelegend.app.shared.protocol.ItemsStatesUpdateEventData
-import com.bytelegend.app.shared.protocol.MissionUpdateEventData
 import com.bytelegend.app.shared.protocol.STAR_UPDATE_EVENT
 import com.bytelegend.app.shared.protocol.StarUpdateEventData
 import com.bytelegend.app.shared.protocol.missionUpdateEvent
@@ -41,53 +42,69 @@ import org.kodein.di.instance
 
 const val MISSION_REPAINT_EVENT = "mission.repaint"
 
-class DefaultPlayerMissionContainer(
+class DefaultPlayerChallengeContainer(
     di: DI,
-    private val missions: MutableMap<String, PlayerMission>
-) : PlayerMissionContainer {
+    private val playerChallenges: MutableMap<String, PlayerChallenge>
+) : PlayerChallengeContainer {
     private val eventBus: EventBus by di.instance()
     private val game: GameRuntime by di.instance()
     private val gameControl: GameControl by di.instance()
-    var gameScene: DefaultGameScene? = null
+    private lateinit var gameScene: DefaultGameScene
+    private val missionIdToChallenges: MutableMap<String, List<String>> = JSObjectBackedMap()
     private val pullRequestAnswers: MutableMap<String, List<PullRequestAnswer>> = JSObjectBackedMap()
 
     init {
-        missions.forEach {
+        playerChallenges.forEach {
             pullRequestAnswers[it.key] = it.value.answers.toPullRequestAnswers()
         }
     }
 
     private val starUpdateEventListener: EventListener<StarUpdateEventData> = this::onStarUpdate
-    private val missionUpdateEventListener: EventListener<MissionUpdateEventData> = this::onMissionUpdate
+    private val challengeUpdateEventListener: EventListener<ChallengeUpdateEventData> = this::onPlayerChallengeUpdate
 
-    override fun missionAccomplished(missionId: String): Boolean {
-        return missions[missionId]?.accomplished == true
+    override fun challengeAccomplished(challengeId: String): Boolean {
+        return playerChallenges[challengeId]?.accomplished == true
+    }
+
+    override fun challengeStar(challengeId: String): Int {
+        return playerChallenges[challengeId]?.star ?: 0
     }
 
     override fun missionStar(missionId: String): Int {
-        return missions[missionId]?.star ?: 0
+        val challengeIds: List<String> = missionIdToChallenges[missionId] ?: emptyList()
+        return challengeIds.sumOf { challengeStar(it) }
     }
 
-    override fun getPlayerMissionById(missionId: String): PlayerMission? = missions[missionId]
+    override fun getPlayerChallengesByMissionId(missionId: String): List<PlayerChallenge> {
+        val ret = JSArrayBackedList<PlayerChallenge>()
+        missionIdToChallenges[missionId]?.forEach {
+            val challenge = playerChallenges[it]
+            if (challenge != null) {
+                ret.add(challenge)
+            }
+        }
+        return ret
+    }
 
-    override fun getPullRequestMissionAnswersByMissionId(missionId: String): List<PullRequestAnswer> {
+    override fun getPullRequestChallengeAnswersByMissionId(missionId: String): List<PullRequestAnswer> {
         return pullRequestAnswers[missionId] ?: emptyList()
     }
 
-    private fun putMission(missionId: String, mission: PlayerMission) {
-        val oldMission = missions[missionId]
+    private fun putChallenge(challenge: PlayerChallenge) {
+        val challengeId = challenge.challengeId
+        val oldMission = playerChallenges[challengeId]
         if (oldMission == null) {
-            missions[missionId] = mission
-            pullRequestAnswers[missionId] = mission.answers.toPullRequestAnswers()
+            playerChallenges[challengeId] = challenge
+            pullRequestAnswers[challengeId] = challenge.answers.toPullRequestAnswers()
         } else {
             // When the answer events from server are misordered, it might be:
             // [answer1, answer2, answer3] comes first and [answer1, answer2] comes later
             // In this case, we need to make sure no answers missing
-            val set = oldMission.answers.toMutableSet().apply { addAll(mission.answers) }
-            mission.answers.clear()
-            mission.answers.addAll(JSArrayBackedList(set))
-            missions[missionId] = mission
-            pullRequestAnswers[missionId] = mission.answers.toPullRequestAnswers()
+            val set = oldMission.answers.toMutableSet().apply { addAll(challenge.answers) }
+            challenge.answers.clear()
+            challenge.answers.addAll(JSArrayBackedList(set))
+            playerChallenges[challengeId] = challenge
+            pullRequestAnswers[challengeId] = challenge.answers.toPullRequestAnswers()
         }
     }
 
@@ -96,10 +113,10 @@ class DefaultPlayerMissionContainer(
     }
 
     fun onItemsUpdate(eventData: ItemsStatesUpdateEventData) {
-        val mission = gameScene!!.objects.getByIdOrNull<GameMission>(eventData.missionId)?.gameMapMission ?: return
+        val mission = gameScene.objects.getByIdOrNull<GameMission>(eventData.missionId)?.gameMapMission ?: return
 
         if (isCanvasInvisible()) {
-            gameScene?.scripts(ASYNC_ANIMATION_CHANNEL, false) {
+            gameScene.scripts(ASYNC_ANIMATION_CHANNEL, false) {
                 eventData.onFinishSpec.items.add.forEach { item ->
                     this.unsafeCast<DefaultGameDirector>().suspendAnimation {
                         itemPopup(item, mission)
@@ -116,12 +133,12 @@ class DefaultPlayerMissionContainer(
     }
 
     private fun onStarUpdate(eventData: StarUpdateEventData) {
-        val currentMap: String = gameScene?.map?.id ?: return
+        val currentMap: String = gameScene.map.id
         if (currentMap == eventData.map) {
             // star/mission change happens on current map
             // respond to the event
-            val mission = gameScene!!.objects.getById<GameMission>(eventData.missionId).gameMapMission
-            val canvasState = gameScene!!.canvasState
+            val mission = gameScene.objects.getById<GameMission>(eventData.missionId).gameMapMission
+            val canvasState = gameScene.canvasState
             val endCoordinateInGameContainer: PixelCoordinate =
                 canvasState.determineRightSideBarTopLeftCornerCoordinateInGameContainer()
             val startCoordinateInGameContainer: PixelCoordinate =
@@ -132,7 +149,7 @@ class DefaultPlayerMissionContainer(
                     canvasState.calculateCoordinateInGameContainer(mission.gridCoordinate)
 
             if (isCanvasInvisible()) {
-                gameScene?.scripts(ASYNC_ANIMATION_CHANNEL, false) {
+                gameScene.scripts(ASYNC_ANIMATION_CHANNEL, false) {
                     this.unsafeCast<DefaultGameDirector>().suspendAnimation {
                         starFlyThenIncrement(
                             canvasState.gameContainerSize,
@@ -153,14 +170,14 @@ class DefaultPlayerMissionContainer(
                     )
                 }
             }
-        } else if (gameScene!!.gameRuntime.sceneContainer.getSceneByIdOrNull(eventData.map) == null &&
-            gameScene!!.isActive
+        } else if (gameScene.gameRuntime.sceneContainer.getSceneByIdOrNull(eventData.map) == null &&
+            gameScene.isActive
         ) {
             // the corresponding scene is not loaded, let activeScene respond
             // only add star
             if (isCanvasInvisible()) {
                 // if modal is visible, add to script list
-                gameScene?.scripts(ASYNC_ANIMATION_CHANNEL, false) {
+                gameScene.scripts(ASYNC_ANIMATION_CHANNEL, false) {
                     this.unsafeCast<DefaultGameDirector>().suspendAnimation {
                         starIncrement(eventData)
                     }
@@ -184,7 +201,7 @@ class DefaultPlayerMissionContainer(
             )
         )
         playAudio("popup")
-        val canvasState = gameScene!!.canvasState
+        val canvasState = gameScene.canvasState
         itemPopupEffect(
             item,
             canvasState.gameContainerSize,
@@ -218,26 +235,28 @@ class DefaultPlayerMissionContainer(
         game.eventBus.emit(STAR_INCREMENT_EVENT, eventData)
     }
 
-    private fun onMissionUpdate(eventData: MissionUpdateEventData) {
+    private fun onPlayerChallengeUpdate(eventData: ChallengeUpdateEventData) {
         if (logger.debugEnabled) {
-            logger.debug("Received mission update event: ${eventData.newValue.missionId} ${eventData.change.answer} ${JSON.stringify(eventData.change.data)} ${eventData.change.createdAt}")
+            logger.debug("Received mission update event: ${eventData.newValue.challengeId} ${eventData.change.answer} ${JSON.stringify(eventData.change.data)} ${eventData.change.createdAt}")
         }
-        val missionId = eventData.newValue.missionId
-        putMission(missionId, eventData.newValue)
+        putChallenge(eventData.newValue)
         if (eventData.change.accomplished) {
-            showConfetti(gameScene!!.canvasState, gameScene!!.objects.getPointById(missionId))
+            showConfetti(gameScene.canvasState, gameScene.objects.getPointById(eventData.newValue.missionId))
         }
         eventBus.emit(MISSION_REPAINT_EVENT, eventData)
     }
 
     fun init(gameScene: GameScene) {
         this.gameScene = gameScene.unsafeCast<DefaultGameScene>()
+        this.gameScene.objects.getByRole<GameMission>(GameObjectRole.Mission).forEach {
+            missionIdToChallenges[it.gameMapMission.id] = it.gameMapMission.challenges
+        }
         eventBus.on(STAR_UPDATE_EVENT, starUpdateEventListener)
-        eventBus.on(missionUpdateEvent(gameScene.map.id), missionUpdateEventListener)
+        eventBus.on(missionUpdateEvent(gameScene.map.id), challengeUpdateEventListener)
     }
 
     fun close() {
-        eventBus.remove(missionUpdateEvent(gameScene!!.map.id), missionUpdateEventListener)
+        eventBus.remove(missionUpdateEvent(gameScene.map.id), challengeUpdateEventListener)
         eventBus.remove(STAR_UPDATE_EVENT, starUpdateEventListener)
     }
 }
