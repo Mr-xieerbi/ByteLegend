@@ -5,7 +5,8 @@ plugins {
 
 dependencies {
     api(project(":shared"))
-    api(project(":client:common"))
+    api(project(":client:common")) {
+    }
     testImplementation(kotlin("test-js"))
 }
 
